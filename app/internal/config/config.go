@@ -1,5 +1,11 @@
 package config
 
+import (
+	"github.com/ilyakaznacheev/cleanenv"
+	"log"
+	"sync"
+)
+
 type Config struct {
 	IsDebug       bool `env:"IS_DEBUG" env-default:"false"`
 	IsDevelopment bool `env:"IS_DEv" env-default:"false"`
@@ -15,4 +21,23 @@ type Config struct {
 			Password string `env:"ADMIN_PWD" env-required:"true"`
 		}
 	}
+}
+
+var instance *Config
+var once sync.Once
+
+func GetConfig() *Config {
+	once.Do(func() {
+		log.Print("gather config")
+
+		instance = &Config{}
+
+		if err := cleanenv.ReadEnv(instance); err != nil {
+			helpText := "The Vilyam Nevsky - Monolith Notes System"
+			help, _ := cleanenv.GetDescription(instance, &helpText)
+			log.Print(help)
+			log.Fatal(err)
+		}
+	})
+	return instance
 }
