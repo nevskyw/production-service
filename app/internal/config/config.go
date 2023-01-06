@@ -1,24 +1,26 @@
 package config
 
 import (
-	"github.com/ilyakaznacheev/cleanenv"
 	"log"
 	"sync"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
 	IsDebug       bool `env:"IS_DEBUG" env-default:"false"`
-	IsDevelopment bool `env:"IS_DEv" env-default:"false"`
+	IsDevelopment bool `env:"IS_DEV" env-default:"false"`
 	Listen        struct {
-		Type   string `env:"LISTEN_TYPE" env-default:"port"` // приложение находится на порту
-		BindIP string `env:"BIND_IP" env-default:"0.0.0.0"`  // приложение на unix сокете
-		Port   string `env:"PORT" env-default:"10000"`       // по умолчанию приложение находится на 10000 порту
+		Type       string `env:"LISTEN_TYPE" env-default:"port" env-description:"'port' or 'sock'. if 'sock' then env 'SOCKET_FILE' is required"`
+		BindIP     string `env:"BIND_IP" env-default:"0.0.0.0"`
+		Port       string `env:"PORT" env-default:"10000"`
+		SocketFile string `env:"SOCKET_FILE" env-default:"app.sock"`
 	}
 	AppConfig struct {
-		LogLeveL  string
+		LogLevel  string `env:"LOG_LEVEL" env-default:"trace"`
 		AdminUser struct {
-			Email    string `env:"ADMIN_EMAIL" env-required:"true"`
-			Password string `env:"ADMIN_PWD" env-required:"true"`
+			Email    string `env:"ADMIN_EMAIL" env-default:"admin"`
+			Password string `env:"ADMIN_PWD" env-default:"admin"`
 		}
 	}
 }
@@ -33,7 +35,7 @@ func GetConfig() *Config {
 		instance = &Config{}
 
 		if err := cleanenv.ReadEnv(instance); err != nil {
-			helpText := "The Vilyam Nevsky - Monolith Notes System"
+			helpText := "The Art of Development - Monolith Notes System"
 			help, _ := cleanenv.GetDescription(instance, &helpText)
 			log.Print(help)
 			log.Fatal(err)
